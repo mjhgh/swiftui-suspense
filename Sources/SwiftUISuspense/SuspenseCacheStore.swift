@@ -2,7 +2,6 @@ import SwiftUI
 
 @Observable
 final public class SuspenseCacheStore<K: Hashable, V: Sendable>: Sendable {
-
   public enum Outcome {
     case progress(Task<Void, Never>)
     case resolved(Result<V, Error>)
@@ -17,18 +16,19 @@ final public class SuspenseCacheStore<K: Hashable, V: Sendable>: Sendable {
   }
   @MainActor
   public func fill(key: K) {
-    if cacheDict[key] == nil {
-      let task: Task<Void, Never> = Task {
-        do {
-          let value = try await execute(key)
-          if Task.isCancelled { return }
-          cacheDict[key] = .resolved(.success(value))
-        } catch {
-          cacheDict[key] = .resolved(.failure(error))
-        }
+    guard cacheDict[key] == nil else { return }
+    
+    let task: Task<Void, Never> = Task {
+      do {
+        let value = try await execute(key)
+        if Task.isCancelled { return }
+        cacheDict[key] = .resolved(.success(value))
+      } catch {
+        cacheDict[key] = .resolved(.failure(error))
       }
-      cacheDict[key] = .progress(task)
     }
+    cacheDict[key] = .progress(task)
+
   }
   @MainActor
   public func read(key: K) throws -> V {

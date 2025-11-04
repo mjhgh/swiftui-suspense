@@ -17,7 +17,7 @@ let package = Package(
       dependencies: [
         .product(name: "SwiftUISuspense", package: "swiftui-suspense")
       ],
-      path: ".",
+      path: "Sources",
     )
   ]
 )
