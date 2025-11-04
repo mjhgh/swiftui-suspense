@@ -7,7 +7,7 @@ import SwiftUISuspense
 struct RedditListingView: View {
   static func Async(url: URL) -> some View {
     SuspenseView {
-      let resp = try RedditListingResp.cache.read(key: url)
+      let resp = try RedditListingResponse.cache.read(key: url)
       RedditListingView(url: url, resp: resp)
     }
 
@@ -21,7 +21,7 @@ struct RedditListingView: View {
     }
   }
   let url: URL
-  let resp: RedditListingResp
+  let resp: RedditListingResponse
 
   var body: some View {
     ScrollView {
@@ -29,12 +29,18 @@ struct RedditListingView: View {
         HStack {
           if let image = thread.preview?.images.first {
             AsyncImageView(url: URL(string: image.source.url.replacing("&amp;", with: "&"))!)
-              .frame(width: 500, height: 500)
+              .frame(width: 300, height: 300)
+          } else {
+            Rectangle()
+              .fill(.gray)
+              .frame(width: 300, height: 300)
           }
+          Divider()
           Text(thread.title)
             .font(.system(size: 50))
           Spacer()
         }
+        .border(.blue)
       }
     }
   }
@@ -47,21 +53,40 @@ struct ContentView: View {
   var inputText: String = "swift"
 
   var body: some View {
+    AsyncImageView(url: URL(string: "https://apple.com/favicon.ico")!)
 
     RedditListingView.Async(
       url: URL(string: "https://old.reddit.com/r/\(subreddit)/hot.json")!
     )
+
     .toolbar {
-      TextField(
-        "subreddit", text: $inputText,
-        onCommit: {
-          subreddit = inputText
-        })
-      Button("refresh") {
-        Task {
-          RedditListingResp.cache.cacheDict = [:]
+      ToolbarItem(placement: .primaryAction) {
+        HStack {
+          TextField(
+            "subreddit", text: $inputText,
+            onCommit: {
+              subreddit = inputText
+            })
+
+          Button("remove all caches") {
+            Task {
+              RedditListingResponse.cache.cacheDict = [:]
+              AsyncImageView.imageDataCache.cacheDict = [:]
+            }
+          }
         }
       }
+      ToolbarItem(placement: .status) {
+        HStack {
+          Text("/r/\(subreddit)")
+          Divider()
+          Text("ImageCache count=\(AsyncImageView.imageDataCache.cacheDict.count)")
+          Divider()
+          Text("RedditListingResponse.cache count=\(RedditListingResponse.cache.cacheDict.count)")
+          Divider()
+        }
+      }
+
     }
 
   }

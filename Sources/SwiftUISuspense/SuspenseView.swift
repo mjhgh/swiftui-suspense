@@ -9,6 +9,7 @@ public struct SuspenseViewWithConfig<CONTENT: View, PROGRESS: View, ERROR: View>
   let content: () throws -> CONTENT
   let progressViewBuilder: () -> PROGRESS
   let errorViewBuilder: (Error) -> ERROR
+
   init(
     @ViewBuilder content: @escaping () throws -> CONTENT,
     @ViewBuilder progressViewBuilder: @escaping () -> PROGRESS,
@@ -19,7 +20,9 @@ public struct SuspenseViewWithConfig<CONTENT: View, PROGRESS: View, ERROR: View>
     self.errorViewBuilder = errorViewBuilder
   }
 
-  public func withProgressView<NEW_PROGRESS: View>(@ViewBuilder builder: @escaping () -> NEW_PROGRESS)
+  public func withProgressView<NEW_PROGRESS: View>(
+    @ViewBuilder builder: @escaping () -> NEW_PROGRESS
+  )
     -> SuspenseViewWithConfig<CONTENT, NEW_PROGRESS, ERROR>
   {
     SuspenseViewWithConfig<CONTENT, NEW_PROGRESS, ERROR>(
@@ -74,7 +77,11 @@ public func SuspenseView<CONTENT: View>(@ViewBuilder content: @escaping () throw
       ProgressView()
     },
     errorViewBuilder: { error in
-      Text("Error: \(error.localizedDescription)")
+      Text("Error: \(error)")
+        .font(.callout)
+        .foregroundStyle(.red)
+        .backgroundStyle(.white)
+        .border(.red)
     }
   )
 }

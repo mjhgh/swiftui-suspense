@@ -1,11 +1,12 @@
 import SwiftUI
 
 @Observable
-final public class SuspenseCacheStore<K: Hashable, V: Sendable>: Sendable {
+final public class SuspenseResourceCache<K: Hashable, V: Sendable>: Sendable {
   public enum Outcome {
     case progress(Task<Void, Never>)
     case resolved(Result<V, Error>)
   }
+  // it's public for now, since manipulating cache is something people will do.
   @MainActor
   public var cacheDict: [K: Outcome] = [:]
   @MainActor
@@ -14,6 +15,8 @@ final public class SuspenseCacheStore<K: Hashable, V: Sendable>: Sendable {
   public init(_ execute: @escaping @Sendable (K) async throws -> V) {
     self.execute = execute
   }
+
+  /// You would use this if you do not want to block, `try read(key:)` will block all further progress`
   @MainActor
   public func fill(key: K) {
     guard cacheDict[key] == nil else { return }

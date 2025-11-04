@@ -1,9 +1,9 @@
 import Foundation
 import SwiftUISuspense
 
-struct RedditListingResp: Codable {
-  static let cache = SuspenseCacheStore(RedditListingResp.init(url:))
-  struct RespData: Codable {
+struct RedditListingResponse: Codable {
+  static let cache = SuspenseResourceCache(RedditListingResponse.init(url:))
+  struct ResponseData: Codable {
     struct Child: Codable {
       struct T3: Codable, Identifiable {
         struct Preview: Codable {
@@ -29,12 +29,12 @@ struct RedditListingResp: Codable {
     let children: [Child]
   }
 
-  let data: RespData
+  let data: ResponseData
 
   init(url: URL) async throws {
     print("fetching", url)
     self = try await JSONDecoder().decode(
-      RedditListingResp.self,
+      RedditListingResponse.self,
       from: URLSession.shared.data(from: url).0
     )
   }
