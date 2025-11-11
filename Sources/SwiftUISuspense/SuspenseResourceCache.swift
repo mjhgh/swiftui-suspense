@@ -20,7 +20,7 @@ final public class SuspenseResourceCache<K: Hashable, V: Sendable>: Sendable {
   @MainActor
   public func fill(key: K) {
     guard cacheDict[key] == nil else { return }
-    
+
     let task: Task<Void, Never> = Task {
       do {
         let value = try await execute(key)
@@ -44,5 +44,10 @@ final public class SuspenseResourceCache<K: Hashable, V: Sendable>: Sendable {
     case .none:
       fatalError("Unreachable state")
     }
+  }
+  
+  @MainActor
+  public func set(key: K, value: V) {
+    cacheDict[key] = .resolved(.success(value))
   }
 }
